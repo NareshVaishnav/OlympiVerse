@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, jsonify
 from flask import session, redirect, url_for
-from flask_socketio import join_room, leave_room, send, SocketIO
+# from flask_socketio import join_room, leave_room, send, SocketIO
 import random
 from string import ascii_uppercase
 from flask_cors import CORS
@@ -15,15 +15,15 @@ from plotly.subplots import make_subplots
 import requests
 import datetime
 
-application = Flask(__name__)
-CORS(application)
+app = Flask(__name__)
+CORS(app)
 
-# application.config['MONGO_DBNAME'] = 'olympics'
-# application.config['MONGO_URI'] = 'mongodb+srv://nareshvaishnavrko11:nareshrko11@cluster0.hudqzdr.mongodb.net/olympics'
-# mongo = PyMongo(application)
+# app.config['MONGO_DBNAME'] = 'olympics'
+# app.config['MONGO_URI'] = 'mongodb+srv://nareshvaishnavrko11:nareshrko11@cluster0.hudqzdr.mongodb.net/olympics'
+# mongo = PyMongo(app)
 
-application.config["SECRET_KEY"] = "hjhjsdahhds"
-socketio = SocketIO(application)
+app.config["SECRET_KEY"] = "hjhjsdahhds"
+# socketio = SocketIO(app)
 
 api_key = '54f5fef66dd24f61a654f4f36667b65f'
 
@@ -35,7 +35,7 @@ medals_df = pd.read_csv('medals.csv')
 # Drop rows with empty 'athlete_full_name' and 'athlete_url'
 medals_df = medals_df.dropna(subset=['athlete_full_name', 'athlete_url'])
 
-# Step 3: Create a mapplicationing of player names to player_ids
+# Step 3: Create a mapping of player names to player_ids
 unique_names = medals_df["athlete_full_name"].unique().tolist()
 
 # Step 4: Add the player_id column to the "Medals" dataset
@@ -80,34 +80,34 @@ sorted_hw = sorted_players_s.merge(sorted_athlete[['Player_ID', 'Height', 'Weigh
 #------------------------------------Data preprocessing ends here---------------------------------
 
 #----------------------------------- Home page -------------------------------------e
-@application.route('/')
+@app.route('/')
 def index():
     return render_template('index.html')
 
-@application.route('/contact')
+@app.route('/contact')
 def contact():
     return render_template('contact.html')
 
 # -------------------------------------- Quiz and Videos -------------------------------------
-@application.route('/quiz')
+@app.route('/quiz')
 def quiz():
     return render_template('quiz.html')
 
-@application.route('/highlights')
+@app.route('/highlights')
 def highlights():
     return render_template('highlights.html')
 
-#--------------------------------Sign up and Log in application ------------------------------------
+#--------------------------------Sign up and Log in app ------------------------------------
 
-# @application.route('/signup')
+# @app.route('/signup')
 # def account():
 #     return render_template('signup.html')
 
-# @application.route('/login')
+# @app.route('/login')
 # def loginacct():
 #     return render_template('login.html')
 
-# @application.route('/info', methods=['POST'])
+# @app.route('/info', methods=['POST'])
 # def signup():
     
 #     if request.method=='POST':
@@ -124,7 +124,7 @@ def highlights():
 
 #         return "Your account has been created."
 
-# @application.route('/log', methods=['POST'])
+# @app.route('/log', methods=['POST'])
 # def login():
 #     if request.method == 'POST':
 #         email = request.form['email']
@@ -138,7 +138,7 @@ def highlights():
 #         else:
 #             return "Invalid email or password. Please try again."
         
-#-------------------------------------Olympics Analysis application---------------------------------------- 
+#-------------------------------------Olympics Analysis app---------------------------------------- 
 
 def fetch_medal(years, country):
     mf = Df.drop_duplicates(subset=['Team', 'NOC', 'Games', 'Year', 'City', 'Sport', 'Event', 'Medal'])
@@ -180,7 +180,7 @@ def success(Df,country):
     
     return successfull.to_dict('records')
 
-@application.route('/medal', methods=['GET', 'POST'])  # Allow both GET and POST methods
+@app.route('/medal', methods=['GET', 'POST'])  # Allow both GET and POST methods
 def medal():
     if request.method == 'POST':
         selected_year = request.form.get('year')
@@ -195,7 +195,7 @@ def medal():
     return render_template('medals.html', years=years, country=country, medal_data=medal_data)
 
 
-@application.route('/overall', methods=['GET', 'POST'])
+@app.route('/overall', methods=['GET', 'POST'])
 def overall():
     Time = Df['Year'].nunique() - 1
     Places = Df['City'].nunique()
@@ -234,7 +234,7 @@ def overall():
     return render_template('overall.html', Time=Time, Places=Places, Games=Games, Events=Events, Athletes=Athletes, Countries=Countries, nations_graph=nations_graph,events_graph=events_graph,players_graph=players_graph,heat_graph=heat_graph,success_data=success_data,sports=sports)
         
 
-@application.route('/country',methods=['GET','POST'])
+@app.route('/country',methods=['GET','POST'])
 def country_wise_analysis():
     
     s_country = request.form.get('Countries')
@@ -260,7 +260,7 @@ def country_wise_analysis():
     return render_template('country.html',country_graph=country_graph,s_country=s_country,country=country,heat_cgraph=heat_cgraph,successful_athletes=successful_athletes)
 
 
-@application.route('/athletes', methods=['GET', 'POST'])
+@app.route('/athletes', methods=['GET', 'POST'])
 def athletes():
 
     athlete_df = Df.drop_duplicates(subset=['Name', 'region'])
@@ -328,7 +328,7 @@ def athletes():
         
     return render_template('athletes.html', athlete_graph=athlete_graph,h_graph=h_graph,sports=sports)
 
-#------------------------------------------- News application ------------------------------------------
+#------------------------------------------- News app ------------------------------------------
 
 # Function to fetch news using the API
 def fetch_news(page, q):
@@ -347,7 +347,7 @@ def fetch_news(page, q):
     return cleaned_articles, news_data.get('totalResults', 0)
 
 
-@application.route('/api/news', methods=['GET'])
+@app.route('/api/news', methods=['GET'])
 def get_news():
     current_query = "Olympics"
     current_page = 1
@@ -362,124 +362,124 @@ def get_news():
     first_five_articles = articles[:5]
     return jsonify(first_five_articles)
     
-@application.route('/news')
+@app.route('/news')
 def news():
     return render_template('news.html')
 
-#------------------------------------- Chat Room application ------------------------------------
+#------------------------------------- Chat Room app ------------------------------------
 
-rooms = {}
+# rooms = {}
 
-def generate_unique_code(length):
-    while True:
-        code = ""
-        for _ in range(length):
-            code += random.choice(ascii_uppercase)
+# def generate_unique_code(length):
+#     while True:
+#         code = ""
+#         for _ in range(length):
+#             code += random.choice(ascii_uppercase)
         
-        if code not in rooms:
-            break
+#         if code not in rooms:
+#             break
     
-    return code
+#     return code
 
-@application.route("/box", methods=["POST", "GET"])
-def box():
-    session.clear()
-    if request.method == "POST":
-        name = request.form.get("name")
-        code = request.form.get("code")
-        join = request.form.get("join", False)
-        create = request.form.get("create", False)
+# @app.route("/box", methods=["POST", "GET"])
+# def box():
+#     session.clear()
+#     if request.method == "POST":
+#         name = request.form.get("name")
+#         code = request.form.get("code")
+#         join = request.form.get("join", False)
+#         create = request.form.get("create", False)
 
-        if not name:
-            return render_template("box.html", error="Please enter a name.", code=code, name=name)
+#         if not name:
+#             return render_template("box.html", error="Please enter a name.", code=code, name=name)
 
-        if join != False and not code:
-            return render_template("box.html", error="Please enter a room code.", code=code, name=name)
+#         if join != False and not code:
+#             return render_template("box.html", error="Please enter a room code.", code=code, name=name)
 
-        room = code
-        if create != False:
-            room = generate_unique_code(4)
-            rooms[room] = {"members": 0, "messages": [], "super_chat_messages": []}  # Initialize super chat messages
-        elif code not in rooms:
-            return render_template("box.html", error="Room does not exist.", code=code, name=name)
+#         room = code
+#         if create != False:
+#             room = generate_unique_code(4)
+#             rooms[room] = {"members": 0, "messages": [], "super_chat_messages": []}  # Initialize super chat messages
+#         elif code not in rooms:
+#             return render_template("box.html", error="Room does not exist.", code=code, name=name)
 
-        session["room"] = room
-        session["name"] = name
-        return redirect(url_for("room"))
+#         session["room"] = room
+#         session["name"] = name
+#         return redirect(url_for("room"))
 
-    return render_template("box.html")
+#     return render_template("box.html")
 
-@application.route("/room")
-def room():
-    room = session.get("room")
-    if room is None or session.get("name") is None or room not in rooms:
-        return redirect(url_for("box"))
+# @app.route("/room")
+# def room():
+#     room = session.get("room")
+#     if room is None or session.get("name") is None or room not in rooms:
+#         return redirect(url_for("box"))
 
-    return render_template("room.html", code=room, messages=rooms[room]["messages"])
+#     return render_template("room.html", code=room, messages=rooms[room]["messages"])
 
-@socketio.on("message")
-def message(data):
-    room = session.get("room")
-    if room not in rooms:
-        return
+# @socketio.on("message")
+# def message(data):
+#     room = session.get("room")
+#     if room not in rooms:
+#         return
 
-    content = {
-        "name": session.get("name"),
-        "message": data["data"],
-        "super_chat": data.get("super_chat", False),
-        "color": data.get("color", "#000000"),  # Default color is black (#000000)
-        "email": data.get("email", ""),  # Get the email from the data sent via the socket
-    }
+#     content = {
+#         "name": session.get("name"),
+#         "message": data["data"],
+#         "super_chat": data.get("super_chat", False),
+#         "color": data.get("color", "#000000"),  # Default color is black (#000000)
+#         "email": data.get("email", ""),  # Get the email from the data sent via the socket
+#     }
 
-    if data.get("super_chat", False):
-        # Handle super chat messages separately
-        amount = int(data.get("amount", 0))
-        recipient = data.get("recipient", "")
-        content["amount"] = amount
-        content["recipient"] = recipient
-        send(content, to=room)
-        rooms[room]["super_chat_messages"].applicationend(content)
-    else:
-        # Regular messages
-        send(content, to=room)
-        rooms[room]["messages"].applicationend(content)
+#     if data.get("super_chat", False):
+#         # Handle super chat messages separately
+#         amount = int(data.get("amount", 0))
+#         recipient = data.get("recipient", "")
+#         content["amount"] = amount
+#         content["recipient"] = recipient
+#         send(content, to=room)
+#         rooms[room]["super_chat_messages"].append(content)
+#     else:
+#         # Regular messages
+#         send(content, to=room)
+#         rooms[room]["messages"].append(content)
 
-    print(f"{session.get('name')} said: {data['data']}, Email: {data.get('email')}")
+#     print(f"{session.get('name')} said: {data['data']}, Email: {data.get('email')}")
 
 
-@socketio.on("connect")
-def connect(auth):
-    room = session.get("room")
-    name = session.get("name")
-    if not room or not name:
-        return
-    if room not in rooms:
-        leave_room(room)
-        return
+# @socketio.on("connect")
+# def connect(auth):
+#     room = session.get("room")
+#     name = session.get("name")
+#     if not room or not name:
+#         return
+#     if room not in rooms:
+#         leave_room(room)
+#         return
 
-    join_room(room)
-    send({"name": name, "message": "has entered the room"}, to=room)
-    rooms[room]["members"] += 1
-    print(f"{name} joined room {room}")
+#     join_room(room)
+#     send({"name": name, "message": "has entered the room"}, to=room)
+#     rooms[room]["members"] += 1
+#     print(f"{name} joined room {room}")
 
-@socketio.on("disconnect")
-def disconnect():
-    room = session.get("room")
-    name = session.get("name")
-    leave_room(room)
+# @socketio.on("disconnect")
+# def disconnect():
+#     room = session.get("room")
+#     name = session.get("name")
+#     leave_room(room)
 
-    if room in rooms:
-        rooms[room]["members"] -= 1
-        if rooms[room]["members"] <= 0:
-            del rooms[room]
+#     if room in rooms:
+#         rooms[room]["members"] -= 1
+#         if rooms[room]["members"] <= 0:
+#             del rooms[room]
 
-    send({"name": name, "message": "has left the room"}, to=room)
-    print(f"{name} has left the room {room}")
+#     send({"name": name, "message": "has left the room"}, to=room)
+#     print(f"{name} has left the room {room}")
     
 
-# ----------------------------------------- Players Profile application --------------------------------------
+# ----------------------------------------- Players Profile app --------------------------------------
 
-@application.route('/profile', methods=['GET','POST'])
+@app.route('/profile', methods=['GET','POST'])
 def search_players():
 
     Country = request.form.get('country_name')
@@ -490,7 +490,7 @@ def search_players():
 
     return render_template('players.html', players=filtered_players,country_url=country_url,sports_url=sports_url)
 
-@application.route('/player/<int:player_id>')
+@app.route('/player/<int:player_id>')
 def player_profile(player_id):
     player = medals_df.loc[medals_df['player_id'] == player_id].iloc[0]
     if not player.empty:
