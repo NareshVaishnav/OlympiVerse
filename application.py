@@ -499,7 +499,5 @@ def player_profile(player_id):
         return 'Player not found', 404
     
 
-if __name__ == "__main__":
-    socketio.run(application,port=5000,debug=True)
 
     
