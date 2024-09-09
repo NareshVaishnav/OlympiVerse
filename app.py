@@ -1,6 +1,5 @@
 from flask import Flask, render_template, request, jsonify
 from flask import session, redirect, url_for
-# from flask_socketio import join_room, leave_room, send, SocketIO
 import random
 from string import ascii_uppercase
 from flask_cors import CORS
@@ -18,12 +17,7 @@ import datetime
 app = Flask(__name__)
 CORS(app)
 
-# app.config['MONGO_DBNAME'] = 'olympics'
-# app.config['MONGO_URI'] = 'mongodb+srv://nareshvaishnavrko11:nareshrko11@cluster0.hudqzdr.mongodb.net/olympics'
-# mongo = PyMongo(app)
-
 app.config["SECRET_KEY"] = "hjhjsdahhds"
-# socketio = SocketIO(app)
 
 api_key = '54f5fef66dd24f61a654f4f36667b65f'
 
@@ -96,47 +90,6 @@ def quiz():
 @app.route('/highlights')
 def highlights():
     return render_template('highlights.html')
-
-#--------------------------------Sign up and Log in app ------------------------------------
-
-# @app.route('/signup')
-# def account():
-#     return render_template('signup.html')
-
-# @app.route('/login')
-# def loginacct():
-#     return render_template('login.html')
-
-# @app.route('/info', methods=['POST'])
-# def signup():
-    
-#     if request.method=='POST':
-#         name = request.form['name']
-#         email = request.form['email']
-#         password = request.form['password']
-
-#         # Create a new document (record) to insert into the collection
-#         mongo.db.signups.insert_one({
-#             'Name' :name,
-#             'Email':email,
-#             'Password':password
-#         })
-
-#         return "Your account has been created."
-
-# @app.route('/log', methods=['POST'])
-# def login():
-#     if request.method == 'POST':
-#         email = request.form['email']
-#         password = request.form['password']
-
-#         # Check if the email and password match any record in the database
-#         user = mongo.db.signups.find_one({'Email': email, 'Password': password})
-
-#         if user:
-#             return "Login successful!"
-#         else:
-#             return "Invalid email or password. Please try again."
         
 #-------------------------------------Olympics Analysis app---------------------------------------- 
 
@@ -366,117 +319,6 @@ def get_news():
 def news():
     return render_template('news.html')
 
-#------------------------------------- Chat Room app ------------------------------------
-
-# rooms = {}
-
-# def generate_unique_code(length):
-#     while True:
-#         code = ""
-#         for _ in range(length):
-#             code += random.choice(ascii_uppercase)
-        
-#         if code not in rooms:
-#             break
-    
-#     return code
-
-# @app.route("/box", methods=["POST", "GET"])
-# def box():
-#     session.clear()
-#     if request.method == "POST":
-#         name = request.form.get("name")
-#         code = request.form.get("code")
-#         join = request.form.get("join", False)
-#         create = request.form.get("create", False)
-
-#         if not name:
-#             return render_template("box.html", error="Please enter a name.", code=code, name=name)
-
-#         if join != False and not code:
-#             return render_template("box.html", error="Please enter a room code.", code=code, name=name)
-
-#         room = code
-#         if create != False:
-#             room = generate_unique_code(4)
-#             rooms[room] = {"members": 0, "messages": [], "super_chat_messages": []}  # Initialize super chat messages
-#         elif code not in rooms:
-#             return render_template("box.html", error="Room does not exist.", code=code, name=name)
-
-#         session["room"] = room
-#         session["name"] = name
-#         return redirect(url_for("room"))
-
-#     return render_template("box.html")
-
-# @app.route("/room")
-# def room():
-#     room = session.get("room")
-#     if room is None or session.get("name") is None or room not in rooms:
-#         return redirect(url_for("box"))
-
-#     return render_template("room.html", code=room, messages=rooms[room]["messages"])
-
-# @socketio.on("message")
-# def message(data):
-#     room = session.get("room")
-#     if room not in rooms:
-#         return
-
-#     content = {
-#         "name": session.get("name"),
-#         "message": data["data"],
-#         "super_chat": data.get("super_chat", False),
-#         "color": data.get("color", "#000000"),  # Default color is black (#000000)
-#         "email": data.get("email", ""),  # Get the email from the data sent via the socket
-#     }
-
-#     if data.get("super_chat", False):
-#         # Handle super chat messages separately
-#         amount = int(data.get("amount", 0))
-#         recipient = data.get("recipient", "")
-#         content["amount"] = amount
-#         content["recipient"] = recipient
-#         send(content, to=room)
-#         rooms[room]["super_chat_messages"].append(content)
-#     else:
-#         # Regular messages
-#         send(content, to=room)
-#         rooms[room]["messages"].append(content)
-
-#     print(f"{session.get('name')} said: {data['data']}, Email: {data.get('email')}")
-
-
-# @socketio.on("connect")
-# def connect(auth):
-#     room = session.get("room")
-#     name = session.get("name")
-#     if not room or not name:
-#         return
-#     if room not in rooms:
-#         leave_room(room)
-#         return
-
-#     join_room(room)
-#     send({"name": name, "message": "has entered the room"}, to=room)
-#     rooms[room]["members"] += 1
-#     print(f"{name} joined room {room}")
-
-# @socketio.on("disconnect")
-# def disconnect():
-#     room = session.get("room")
-#     name = session.get("name")
-#     leave_room(room)
-
-#     if room in rooms:
-#         rooms[room]["members"] -= 1
-#         if rooms[room]["members"] <= 0:
-#             del rooms[room]
-
-#     send({"name": name, "message": "has left the room"}, to=room)
-#     print(f"{name} has left the room {room}")
-    
-
 # ----------------------------------------- Players Profile app --------------------------------------
 
 @app.route('/profile', methods=['GET','POST'])
@@ -498,6 +340,5 @@ def player_profile(player_id):
     else:
         return 'Player not found', 404
     
-
-
-    
+if __name__ == "__main__":
+    app.run()
